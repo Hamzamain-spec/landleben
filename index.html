@@ -116,12 +116,12 @@ nav{background:var(--ink);border-top:2px solid var(--sage);border-bottom:2px sol
 .pc-date-text{font-size:11px;color:var(--muted)}
 .pc-title{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);line-height:1.2;margin-bottom:8px;transition:color .2s}
 .post-card:hover .pc-title{color:var(--olive)}
-.pc-exc{font-size:13px;line-height:1.65;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
+.pc-exc{font-size:13px;line-height:1.65;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
 .pc-foot{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
 .pc-author{font-size:12px;font-weight:600;color:var(--mid)}
 .pc-read{font-size:11px;font-weight:600;color:var(--olive);text-decoration:none;letter-spacing:1px;transition:gap .2s;display:flex;align-items:center;gap:4px}
 .post-card:hover .pc-read{gap:8px}
-.empty-state{text-align:center;padding:80px;background:var(--white);border:1px solid var(--border);border-radius:30px}
+.empty-state{text-align:center;padding:80px;background:var(--white);border:1px solid var(--border);border-radius:30px;grid-column:1/-1}
 .empty-state h3{font-family:'Instrument Serif',serif;font-size:32px;color:var(--ink);margin-bottom:8px}
 .empty-state p{color:var(--muted);font-size:14px}
 
@@ -341,7 +341,9 @@ async function loadPosts() {
     // Hero main (latest post)
     const p0 = posts[0];
     const fd = new Date(p0.date).toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'});
-    const exc = p0.content.replace(/<[^>]+>/g, '').substring(0, 160) + '...';
+    // FIXED: Proper excerpt for hero
+    const fullText0 = p0.content.replace(/<[^>]+>/g, '');
+    const heroExc = fullText0.length > 160 ? fullText0.substring(0, fullText0.lastIndexOf(' ', 160)) + '...' : fullText0;
     
     const hm = document.getElementById('hero-main');
     hm.onclick = () => location.href = 'post.html?id=' + p0.id;
@@ -350,7 +352,7 @@ async function loadPosts() {
       <div class="hero-main-body">
         <div class="hero-cat">${p0.category || 'Allgemein'}</div>
         <div class="hero-title">${p0.title}</div>
-        <div class="hero-excerpt">${exc}</div>
+        <div class="hero-excerpt">${heroExc}</div>
         <div class="hero-meta"><strong>${p0.author || 'Redaktion'}</strong><span>·</span><span>${fd}</span></div>
       </div>`;
     
@@ -365,12 +367,15 @@ async function loadPosts() {
       </div>`;
     });
     
-    // Posts grid
+    // Posts grid - FIXED: Proper excerpt truncation
     const pl = document.getElementById('posts-list');
     pl.innerHTML = '';
     posts.forEach((p, i) => {
       const date = new Date(p.date).toLocaleDateString('de-DE', {day:'numeric', month:'long', year:'numeric'});
-      const exc = p.content.replace(/<[^>]+>/g, '').substring(0, 100) + '...';
+      // FIXED: Create a proper short excerpt
+      const fullText = p.content.replace(/<[^>]+>/g, '');
+      const exc = fullText.length > 100 ? fullText.substring(0, fullText.lastIndexOf(' ', 100)) + '...' : fullText;
+      
       const readTime = Math.max(1, Math.round(p.content.replace(/<[^>]+>/g, '').split(' ').length / 200));
       pl.innerHTML += `<div class="post-card" onclick="location.href='post.html?id=${p.id}'">
         <div class="pc-img"><div class="pc-img-bg ${bgs[i % bgs.length]}"></div><div class="pc-date-badge">${new Date(p.date).toLocaleDateString('de-DE', {day:'numeric', month:'short'})}</div></div>
