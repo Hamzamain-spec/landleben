@@ -139,7 +139,7 @@ footer a:hover{color:var(--sage)}
 </footer>
 
 <script>
-// Constants
+// Constants - FIXED: Ensure these are correct
 const GIST_ID = '42ea11087f40fdba423f8eb0f575ac96';
 const SITE_NAME = 'landleben';
 const RAW_URL = `https://gist.githubusercontent.com/Hamzamain-spec/${GIST_ID}/raw/posts.json`;
@@ -149,17 +149,23 @@ const id = params.get('id');
 
 async function loadPost() {
   try {
+    console.log('Loading post with ID:', id);
+    console.log('Fetching from:', RAW_URL);
+    
     const response = await fetch(RAW_URL);
     const allPosts = await response.json();
+    console.log('Total posts in Gist:', allPosts.length);
     
     // Filter posts by site name
     const sitePosts = Array.isArray(allPosts) 
       ? allPosts.filter(p => p.site === SITE_NAME)
       : [];
+    console.log(`Posts for site "${SITE_NAME}":`, sitePosts.length);
     
     const post = sitePosts.find(p => p.id == id);
     
     if (post) {
+      console.log('Post found:', post.title);
       document.title = post.title + ' — LandLeben';
       document.getElementById('ph-title').textContent = post.title;
       document.getElementById('ph-cat').textContent = post.category || 'Allgemein';
@@ -186,6 +192,7 @@ async function loadPost() {
         </div>`;
       });
     } else {
+      console.log('Post not found. Available IDs:', sitePosts.map(p => p.id));
       document.getElementById('not-found').style.display = 'block';
     }
   } catch (e) {
